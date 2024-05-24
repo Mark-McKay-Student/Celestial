@@ -24,7 +24,7 @@ This final project will be an application built using JavaScript, HTML, & CSS th
 
 ---
 
-### If you wish to complete your final project using Unity or some other system, contact your teacher ASAP.
+### If you wish to complete your final project using some other system or language, contact your teacher ASAP.
 
 ---
 
@@ -38,7 +38,7 @@ This final project will be an application built using JavaScript, HTML, & CSS th
 - Proper commenting and structure of code
 - Student does not utilize tutorial or pre-baked code to create final project
   - Simple algorithms (ie. randInt) or CSS examples excluded
-- **Due no later than Tuesday, Jan 23rd @ 8:30am**
+- **Due no later than Tuesday, June 18th @ 8:30am**
 
 ### Project Ideas (in no particular order)
 
@@ -125,7 +125,6 @@ Code Documentation | x | x | x | Developer has supplied a thorough documentation
 
 ### Resources:
 (updated when new ones are found or made)
-- [Replit](https://replit.com/teams)
 - [Class website](https://school.brash.ca)
 - [w3schools](http://w3schools.com)
 
