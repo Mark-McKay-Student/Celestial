@@ -1,8 +1,9 @@
-# ICS4U Final Project (RST)
-
-ICS4UC Final Project (Rich Summative Task) worth 30% of the overall mark.
+# Gr. 12 Final Project (RST)
 
 ###### ICS4U - Mr. Brash 🐿️
+
+Final Project (Rich Summative Task) worth 30% of the overall mark.
+
 
 ### General Outline: 
 
@@ -12,19 +13,15 @@ The final project encompasses your understanding of the course material. It shou
 - Complex Data Structures (multi-dimensional arrays / matrices)
 - Abstract Data Types (pseudo-objects using key,value pairs)
 - Object Oriented Programming (Classes)
+  - Required
 - The Model-View-Controller (MVC) design pattern
   - Back-to-Front-End Development (HTML)
-  - (_optional_) Usage of the `<canvas>` element 
-  - (_optional_) Animation through either `setInterval()` or `requestAnimationFrame()`   
+  - (_optional_) Usage of the `<canvas>` element or [the p5js library](https://www.p5js.org)
   - (_optional_) Collisions & movement 
 
-Note that OOP is highly recommended, mostly if you plan on continuing with computer science in your future.
+This final project will be an application built using JavaScript, HTML, & CSS. It is worth 30% of your final grade.
 
-This final project will be an application built using JavaScript, HTML, & CSS through the Replit IDE. It is worth 30% of your final grade.
-
----
-
-### If you wish to complete your final project using some other system or language, contact your teacher ASAP.
+#### If you wish to complete your final project using some other system or language, contact your teacher ASAP.
 
 ---
 
@@ -42,31 +39,34 @@ This final project will be an application built using JavaScript, HTML, & CSS th
 
 ### Project Ideas (in no particular order)
 
-- Minesweeper (add your own twist?)
+- [Minesweeper](https://minesweeper.brash.ca) (add your own twist?)
 - Battleship
 - Backgammon
 - Solitaire (or other card games)
 - Side-scroller similar to Flappy-Bird
-- Chess or Checkers (a good challenge)
+- [Chess](https://chess.adamts.me/) or Checkers (a good challenge)
 - Snake (fairly simple but involves animation)
 - Tetris
-- 2048 (harder than you think)
+- [2048](https://misterbrash.github.io/2048_Student_Example/) (harder than you think)
 - Space Invaders or Similar
+- Battleship (add your own twist?)
 - [Crossword puzzle generator](https://crosswordlabs.com/)
 - [Word search generator](https://thewordsearch.com/maker/)
 - [Maze generator](https://www.mazegenerator.net/) (and solver?)
 
 ### _Suggested_ Timeline (Descriptions below the table)
 
-| Proposal Submission | Draft GUI (Storyboarding) | Data structure & Pseudocode | Code | Test & Fix | Submit _by_|
-|:----:|:----:|:----:|:----:|:----:|:----:|
-|Dec. 12th| Dec 13-15th|Dec. 18-19th|Dec. 20th - Jan. 17th|Jan 18-22nd|Jan 23rd @ 8:30am|
+| Pick Game / App | Draft GUI (Storyboarding) & Data structure | Code | Test & Fix | Submit _by_|
+|:----:|:----:|:----:|:----:|:----:|
+|By Tues. May 28th| May 28-30 | May 30 - June 13 | June 13-17 |Tues June 18th @ 8:30am |
 
 ### Step 1: Proposal
 [Complete this Google Form](https://docs.google.com/forms/d/e/1FAIpQLSfYXBfspLdxx4dWfqBpX3bY1Ffq9Ng47MlwBIFt5-fb1eI8zg/viewform?usp=sf_link) to the best of your ability. Expect potential changes or discussion with your teacher within a day or two.
 
 ### Step 2: Draft GUI (Storyboarding)
-On paper, a whiteboard, or a digital image (you could use [`Storyboards.draw`](#Planning/Storyboards.draw) if you wish). Create and submit a draft design for the front-end of the program. This will include any and all input/control from the user as well as extra pages or information panels. Try to be detailed and as complete as possible here in order to make your coding portion simpler. (It is **ok** if the final product does _not_ match your draft. Do not modify it afterward.)
+On paper, a whiteboard, or a digital image (you could use Excalidraw, if you wish) create and submit a draft design for the front-end of the program. This will include any and all input/control from the user as well as extra pages or information panels. Try to be detailed and as complete as possible in order to make coding simpler. Place images or content in the [Step_2](Step_2) folder. 
+
+(It's **ok** if the final product does _not_ match your draft. Do not modify it afterward.)
 
 ### Step 3: Data Structure & Pseudocode
 Now that you have a front-end, you can begin designing the data structure and functions for your program.
@@ -74,27 +74,26 @@ Now that you have a front-end, you can begin designing the data structure and fu
   - Do any need to be _global_ variables?
   - Does your OOP involve _inheritance_?
   - Are you over-complicating your data structure? (don't do that)
-- Are you using a canvas or other HTML elements?
+- Are you using a canvas ([p5js](https://www.p5js.org)) or other HTML elements?
 - Do you need event listeners?
   - What are the listeners?
-    - If keys or mouse, what information do you need like keyCodes or mouse buttons?
+    - If keys or mouse, what information do you need like key codes or mouse buttons?
   - What function(s) will those listeners be calling?
 - What is the functional structure of the program?
   - What helper functions do you think you'll need?
 
-Inside the [Planning](#Planning) folder, upload a text file or image of your planning and pseudocode. Try to work in an organized fashion so you can read your own work!
+Inside the [Step_3](Step_3) folder, upload a text file or image of your planning and pseudocode. Try to work in an organized fashion so you can read your own work!
 
-(It is ok if your code structure changes - especially your data structurer or major algorithms, this is all part of the planning.)
+(It is **ok** if your code structure changes - especially your data structurer or major algorithms, this is all part of the planning.)
 
 ### Step 4: Code, code, code
 If you planned the GUI and the code structure properly, the coding should be easier at this point.
 - Create the basic GUI. **Don't worry about colours, fonts, design** - don't even worry about specific photos (you can replace them later). Give your elements meaningful IDs and create a layout that mimics your storyboards.
   - Have you noticed changes you'll need to make? That's ok, make them!
 - I cannot stress enough how important it is to avoid making it _look good_ at this point. **Get it working first!**
-- Connect your HTML to the JavaScript file.
-  - Enable the event listeners and make sure they work.
-  - Create the data structure you decided upon. 
-- Write the functions one-by-one, testing as necessary.
+- Enable the event listeners and make sure they work.
+- Create the data structure you planned. 
+- Write the functions one-by-one, **testing as necessary**.
 - Keep notes on changes you foresee or extra functions and algorithms you did not realize you would need during your planning stages. (_Do not change your storyboards or pseudocode for these adjustments_)
 - Test, test, test...
 - **COMMENT YOUR CODE AS YOU GO!**
@@ -125,11 +124,12 @@ Code Documentation | x | x | x | Developer has supplied a thorough documentation
 
 ### Resources:
 (updated when new ones are found or made)
-- [Class website](https://school.brash.ca)
+- [Class website](https://www.brash.ca)
 - [w3schools](http://w3schools.com)
 
 - [Regular deck of 54 cards PNG files](https://drive.google.com/drive/folders/1hYgBIqgznqmL_cvZnpEsaWlCR1SjDxnD?usp=sharing)
 - [Low-Res Battleship graphics](https://drive.google.com/drive/folders/0BzyP6cTwQ57eQWFLRjJ0TnFkUXc?resourcekey=0-T7t2LVthJId6vlsmrtwKUg&usp=sharing)
+- [p5js reference](https://p5js.org/reference/)
 - [Canvas Element & 2D Arrays slideshow](https://docs.google.com/presentation/d/e/2PACX-1vS-hC9xZtpAwELck59sNa1Syq5JqAfhQe2ixrD6VnvXH4KUNTU5f_hIPCxnAdx2YAVNrVaRmxJ44lsm/pub?start=false&loop=false&delayms=3000)
 
 
