@@ -2,4 +2,9 @@ html,
 body {
     height: 100%;
     width: 100%;
+    overflow-x: hidden;
+    overflow-y: hidden;
+    min-width: 320;
+    min-height: 180;
+    margin: 0;
 }
