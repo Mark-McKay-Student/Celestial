@@ -1,0 +1,7 @@
+For the basic color version
+Blue: Nothing
+Grey: Solid
+Yellow: Semi-Solid
+Red: Death
+
+The map can be stored in a style inspired by fen, where there is an array (easier to look through then a string) of alternating characters and numbers drawing the grid from left to right once for each row. The character is what tile (color for now) is going to be drawn, and the number is how many.
