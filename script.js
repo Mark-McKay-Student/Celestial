@@ -15,10 +15,10 @@ let grid = [[]];
 // 4x 1280:720 32
 // 6x 1920:1080 48
 // 8x 2560:1440 64
-let width = 1280;
-let height = 720;
-let tileSize = 32;
-let pixel = tileSize / 8;
+const width = 1280;
+const height = 720;
+const tileSize = 32;
+const pixel = tileSize / 8;
 
 const b = [0, 150, 255];
 const g = [100, 100, 100];
@@ -37,8 +37,25 @@ class tile {
 }
 
 class player {
-  xPosition = tileSize * 6;
-  yPosition = tileSize * 15;
+  xPosition = tileSize * 6; // spawn location
+  yPosition = tileSize * 15; //
+  jumpProgress = 1;
+
+  /** Returns the distance the player moves. Gets called every frame either left or right is pressed down
+   * @param {number} dir Either 0 or 1, with 0 being move left, and 1 being move right
+   * @returns {number} How much the player moves, minus 1 pixel for moving one pixel left, 0 if movement didn't go through, and plus 1 pixel for moving 1 pixel right  */
+  move(dir) {
+    const left = Math.floor((this.xPosition - pixel) / tileSize);
+    const right = Math.ceil((this.xPosition + pixel) / tileSize);
+    const top = Math.floor(this.yPosition / tileSize); // adding 1 to this value gives you the bottom row of the player
+    if (!dir && grid[top + 1][left].color != g && grid[top][left].color != g) return -pixel;
+    if (dir && grid[top + 1][right].color != g && grid[top][right].color != g) return pixel;
+    return 0;
+  }
+
+  /** Cook a grilled cheese
+   * @returns grilled cheese  */
+  jump() {}
 }
 
 function setup() {
@@ -62,8 +79,8 @@ function draw() {
   noStroke();
   for (let y = 0; y < 23; y++) {
     for (let x = 0; x < 40; x++) {
-      /* if (grid[y][x].color == b) noStroke();
-      else  */ stroke(0);
+      if (grid[y][x].color == b) noStroke(); // go to doctor
+      else stroke(0); // smell toast
       fill(grid[y][x].color);
       rect(x * tileSize, y * tileSize, tileSize, tileSize);
     }
@@ -71,13 +88,15 @@ function draw() {
 
   // if left arrow key is down
   if (keyIsDown(37)) {
-    if (grid[Math.floor(adeline.yPosition / tileSize)][Math.floor((adeline.xPosition - pixel) / tileSize)].color != g) adeline.xPosition -= pixel;
-    console.log(Math.floor((adeline.yPosition - pixel) / tileSize), Math.floor((adeline.xPosition - pixel) / tileSize));
+    adeline.xPosition += adeline.move(0);
   }
   // if right arrow key is down
   if (keyIsDown(39)) {
-    if (grid[Math.ceil((adeline.yPosition + pixel) / tileSize)][Math.ceil((adeline.xPosition + pixel) / tileSize)].color != g) adeline.xPosition += pixel;
-    console.log(Math.floor((adeline.yPosition - pixel) / tileSize), Math.floor((adeline.xPosition - pixel) / tileSize));
+    adeline.xPosition += adeline.move(1);
+  }
+
+  if (keyIsDown(67)) {
+    console.log("*insert jump here*");
   }
 
   // draw adeline
@@ -85,4 +104,4 @@ function draw() {
   rect(adeline.xPosition, adeline.yPosition, tileSize, tileSize * 2);
 }
 
-let adeline = new player();
+const adeline = new player();
