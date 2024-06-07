@@ -142,4 +142,4 @@ function draw() {
 
 const adeline = new player();
 
-//https://www.desmos.com/calculator/ygxz4wv5s0
+//https://www.desmos.com/calculator/1xptyhpdeu
