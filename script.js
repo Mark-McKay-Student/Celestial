@@ -136,5 +136,4 @@ function draw() {
 
 const adeline = new player();
 
-// f\left(x\right)=\frac{1}{54}(x-18)^{2}-6\left\{0\le x\le90\right\}
-// f_{1}\left(x\right)=\left(\frac{1}{54}(x-18)^{2}-6)-\left(\frac{1}{54}(x-19)^{2}-6)\right)\right)
+//https://www.desmos.com/calculator/rlfmci7hq2
