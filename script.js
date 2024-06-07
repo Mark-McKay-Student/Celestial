@@ -39,7 +39,10 @@ class tile {
 class player {
   xPosition = tileSize * 6; // spawn location
   yPosition = tileSize * 15; //
-  jumpProgress = 0;
+
+  coyoteFrames = 5; // 5-0 if it is not 0, it goes down 1 every frame. When the player jumps, we check if this is above 0
+  jumpProgress = 0; // 0-18 after 18th frame we apply gravity
+  fallFrames = 0; // 0 means player is on ground, anything above is how many frames the player has been falling (not off the ground, specifically falling) for
 
   /** Returns the distance the player moves. Gets called every frame either left or right is pressed down
    * @param {number} dir Either 0 or 1, with 0 being move left, and 1 being move right
@@ -54,29 +57,38 @@ class player {
         this.xPosition = 192;
         this.yPosition = 480;
       }
-      return (adeline.xPosition -= pixel);
+      return (this.xPosition -= pixel);
     }
     if (dir && grid[top + 1][right].color != g && grid[top][right].color != g) {
       if (dir && (grid[top + 1][right].color == r || grid[top][right].color == r)) {
-        console.log("you suck");
-        this.xPosition = 192;
-        this.yPosition = 480;
+        this.die();
       }
-      return (adeline.xPosition += pixel);
+      return (this.xPosition += pixel);
     }
     return 0;
   }
 
-  /** Cook a grilled cheese
-   * @returns grilled cheese  */
-  jumpGravity() {
-    // 1/108(x-18)^2+3)-(1/108(x-19)^2+3) // yay math
-    let complicatedMath = (1 / 108) * (this.jumpProgress - 18) ** 2 - (1 / 108) * (this.jumpProgress - 19) ** 2;
-    // if (grid[Math.floor((this.yPosition + complicatedMath) / tileSize + 2)][Math.floor(this.xPosition / tileSize + 1)].color == g) {
-    //   this.yPosition += this.yPosition % tileSize;
-    //   this.jumpProgress = -1;
-    // }
-    this.yPosition += complicatedMath * tileSize * 2; // input is 1/3 of space jumped. In celeste madeline can jump over 3 tiles thus with this default value of
+  jump() {
+    this.yPosition -= 500;
+    this.jumpProgress = 1;
+  }
+
+  gravity() {
+    let bellow = grid[Math.floor((this.yPosition - (1 / 54) * this.fallFrames ** 2) / tileSize) + 2][Math.floor(this.xPosition / tileSize)].color;
+    if (bellow == b) {
+      return (this.yPosition += (1 / 54) * (++this.fallFrames) ** 2) / tileSize;
+    }
+
+    if (bellow == g) return (this.fallFrames = 0);
+    if (postMoveColor == g && preMoveColor == b) return (this.yPosition = Math.floor(this.yPosition / tileSize));
+    if (postMoveColor == r) return this.die();
+    // this.yPosition += (1 / 54) * (++this.fallFrames) ** 2;
+  }
+
+  die() {
+    console.log("you suck");
+    this.xPosition = 192;
+    this.yPosition = 480;
   }
 }
 
@@ -97,43 +109,37 @@ function setup() {
 }
 
 function draw() {
-  // draw
-  noStroke();
+  // draw tiles
   for (let y = 0; y < 23; y++) {
     for (let x = 0; x < 40; x++) {
-      if (grid[y][x].color == b) noStroke(); // go to doctor
-      else stroke(0); // smell toast
+      /* if (grid[y][x].color == b) noStroke(); // go to doctor
+      else stroke(0); // smell toast */
+      stroke(0);
       fill(grid[y][x].color);
       rect(x * tileSize, y * tileSize, tileSize, tileSize);
     }
   }
 
-  // if left arrow key is down
-  if (keyIsDown(37)) {
-    adeline.move(0);
-  }
-  // if right arrow key is down
-  if (keyIsDown(39)) {
-    adeline.move(1);
-  }
+  adeline.gravity();
 
-  //c is down
-  if (keyIsDown(67) || keyIsDown(32)) {
-    if (!adeline.jumpProgress) {
-      adeline.jumpProgress++;
-    }
-  }
+  // left arrow key is down
+  if (keyIsDown(37)) adeline.move(0);
 
-  if (adeline.jumpProgress) {
-    adeline.jumpProgress < 37 ? adeline.jumpGravity(adeline.jumpProgress) : (adeline.jumpProgress = -1);
-    adeline.jumpProgress++;
-  }
+  // right arrow key is down
+  if (keyIsDown(39)) adeline.move(1);
+
+  // c or space is down
+  if (keyIsDown(67) || keyIsDown(32)) if (!adeline.jumpProgress) adeline.jump();
 
   // draw adeline
   fill([255, 255, 255]);
   rect(adeline.xPosition, adeline.yPosition, tileSize, tileSize * 2);
+
+  if (keyIsDown(27)) {
+    noLoop();
+  }
 }
 
 const adeline = new player();
 
-//https://www.desmos.com/calculator/mzpp14obgv
+//https://www.desmos.com/calculator/ygxz4wv5s0
