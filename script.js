@@ -39,7 +39,7 @@ class tile {
 class player {
   xPosition = tileSize * 6; // spawn location
   yPosition = tileSize * 15; //
-  jumpProgress = 1;
+  jumpProgress = 0;
 
   /** Returns the distance the player moves. Gets called every frame either left or right is pressed down
    * @param {number} dir Either 0 or 1, with 0 being move left, and 1 being move right
@@ -55,7 +55,17 @@ class player {
 
   /** Cook a grilled cheese
    * @returns grilled cheese  */
-  jump() {}
+  jumpGravity() {
+    // 1/108(x-18)^2+3)-(1/108(x-19)^2+3) // idk if its worth explaining how I got this equation
+    let complicatedMath = (1 / 108) * (this.jumpProgress - 18) ** 2 - (1 / 108) * (this.jumpProgress - 19) ** 2;
+    console.log();
+    if (grid[Math.floor((this.yPosition + complicatedMath) / tileSize + 2)][Math.floor(this.xPosition / tileSize + 1)].color == g) {
+      console.log("making it this far");
+      this.yPosition = Math.floor(this.yPosition) * tileSize;
+      this.jumpProgress = 0;
+    }
+    this.yPosition += complicatedMath * tileSize * 2; // input is 1/3 of space jumped. In celeste madeline can jump over 3 tiles thus with this default value of
+  }
 }
 
 function setup() {
@@ -95,8 +105,16 @@ function draw() {
     adeline.xPosition += adeline.move(1);
   }
 
-  if (keyIsDown(67)) {
-    console.log("*insert jump here*");
+  //c is down
+  if (keyIsDown(67) || keyIsDown(32)) {
+    if (!adeline.jumpProgress) {
+      adeline.jumpProgress++;
+    }
+  }
+
+  if (adeline.jumpProgress) {
+    adeline.jumpProgress < 37 ? adeline.jumpGravity(adeline.jumpProgress) : (adeline.jumpProgress = -1);
+    adeline.jumpProgress++;
   }
 
   // draw adeline
