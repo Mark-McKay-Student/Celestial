@@ -48,22 +48,34 @@ class player {
     const left = Math.floor((this.xPosition - pixel) / tileSize);
     const right = Math.ceil((this.xPosition + pixel) / tileSize);
     const top = Math.floor(this.yPosition / tileSize); // adding 1 to this value gives you the bottom row of the player
-    if (!dir && grid[top + 1][left].color != g && grid[top][left].color != g) return -pixel;
-    if (dir && grid[top + 1][right].color != g && grid[top][right].color != g) return pixel;
+    if (!dir && grid[top + 1][left].color != g && grid[top][left].color != g) {
+      if (!dir && (grid[top + 1][left].color == r || grid[top][left].color == r)) {
+        console.log("you suck");
+        this.xPosition = 192;
+        this.yPosition = 480;
+      }
+      return (adeline.xPosition -= pixel);
+    }
+    if (dir && grid[top + 1][right].color != g && grid[top][right].color != g) {
+      if (dir && (grid[top + 1][right].color == r || grid[top][right].color == r)) {
+        console.log("you suck");
+        this.xPosition = 192;
+        this.yPosition = 480;
+      }
+      return (adeline.xPosition += pixel);
+    }
     return 0;
   }
 
   /** Cook a grilled cheese
    * @returns grilled cheese  */
   jumpGravity() {
-    // 1/108(x-18)^2+3)-(1/108(x-19)^2+3) // idk if its worth explaining how I got this equation
+    // 1/108(x-18)^2+3)-(1/108(x-19)^2+3) // yay math
     let complicatedMath = (1 / 108) * (this.jumpProgress - 18) ** 2 - (1 / 108) * (this.jumpProgress - 19) ** 2;
-    console.log();
-    if (grid[Math.floor((this.yPosition + complicatedMath) / tileSize + 2)][Math.floor(this.xPosition / tileSize + 1)].color == g) {
-      console.log("making it this far");
-      this.yPosition = Math.floor(this.yPosition) * tileSize;
-      this.jumpProgress = 0;
-    }
+    // if (grid[Math.floor((this.yPosition + complicatedMath) / tileSize + 2)][Math.floor(this.xPosition / tileSize + 1)].color == g) {
+    //   this.yPosition += this.yPosition % tileSize;
+    //   this.jumpProgress = -1;
+    // }
     this.yPosition += complicatedMath * tileSize * 2; // input is 1/3 of space jumped. In celeste madeline can jump over 3 tiles thus with this default value of
   }
 }
@@ -98,11 +110,11 @@ function draw() {
 
   // if left arrow key is down
   if (keyIsDown(37)) {
-    adeline.xPosition += adeline.move(0);
+    adeline.move(0);
   }
   // if right arrow key is down
   if (keyIsDown(39)) {
-    adeline.xPosition += adeline.move(1);
+    adeline.move(1);
   }
 
   //c is down
@@ -123,3 +135,6 @@ function draw() {
 }
 
 const adeline = new player();
+
+// f\left(x\right)=\frac{1}{54}(x-18)^{2}-6\left\{0\le x\le90\right\}
+// f_{1}\left(x\right)=\left(\frac{1}{54}(x-18)^{2}-6)-\left(\frac{1}{54}(x-19)^{2}-6)\right)\right)
