@@ -20,10 +20,10 @@ const height = 720;
 const tileSize = 32;
 const pixel = tileSize / 8;
 
-const b = [0, 150, 255];
-const g = [100, 100, 100];
-const r = [255, 0, 0];
-const y = [255, 255, 0];
+const b = 0;
+const g = 1;
+const y = 2;
+const r = 3;
 const map1 = [255, b, 4, g, 36, b, 4, r, 124, b, 4, y, 93, b, 2, g, 21, b, 4, y, 13, b, 2, g, 13, b, 4, g, 21, b, 2, g, 13, b, 4, g, 21, b, 2, g, 11, b, 2, g, 4, g, 21, b, 31, g, 6, b, 3, g, 22, g, 1, r, 14, b, 3, g, 22, g, 1, r, 14, b, 3, g, 22, g, 1, r, 14, b, 3, g, 31, g, 6, b, 3, g, 31, g, 6, b, 3, g];
 
 let paused = 0;
@@ -36,6 +36,13 @@ class tile {
     this.color = color;
     this.half = half;
   }
+
+  get colorCode() {
+    if (this.color < 1) return [0, 150, 255];
+    if (this.color < 2) return [100, 100, 100];
+    if (this.color < 3) return [255, 255, 0];
+    if (this.color < 4) return [255, 0, 0];
+  }
 }
 
 class player {
@@ -43,8 +50,7 @@ class player {
   yPosition = tileSize * 15; //
 
   coyoteFrames = 5; // 5-0 if it is not 0, it goes down 1 every frame. When the player jumps, we check if this is above 0
-  jumpProgress = 0; // 0-18 after 18th frame we apply gravity
-  fallFrames = 0; // 0 means player is on ground, anything above is how many frames the player has been falling (not off the ground, specifically falling) for
+  fallFrames = 0; // -18 to -1 means jump in progress, 0 means peak of jump or on solid ground, above 0 means currently falling
 
   /** Returns the distance the player moves. Gets called every frame either left or right is pressed down
    * @param {number} dir Either 0 or 1, with 0 being move left, and 1 being move right
@@ -53,7 +59,7 @@ class player {
     const left = Math.floor((this.xPosition - pixel) / tileSize);
     const right = Math.ceil((this.xPosition + pixel) / tileSize);
     const top = Math.floor(this.yPosition / tileSize); // adding 1 to this value gives you the bottom row of the player
-    if (!dir && grid[top + 1][left].color != g && grid[top][left].color != g) {
+    if (!dir && grid[tileOf(this.yPosition)][tileOf(this.xPosition - pixel)].color != g && grid[top][left].color != g) {
       if (!dir && (grid[top + 1][left].color == r || grid[top][left].color == r)) {
         console.log("you suck");
         this.xPosition = 192;
@@ -72,33 +78,28 @@ class player {
     return 0;
   }
 
-  jump() {
-    if (this.coyoteFrames && !this.jumpProgress) this.yPosition -= tileSize * 4;
-    this.jumpProgress = 1;
-  }
-
   /** Apply physics. If a jump is in progress, continue upwards, if not, and the tile below is blue, apply gravity
    * @param {Bool} jump wether or not the player is currently pressing a jump button and trying to start a new jump */
   physics(jump) {
-    let below = grid[Math.floor((this.yPosition - ((1 / 54) * this.fallFrames ** 2 - (1 / 54) * (this.fallFrames + 1) ** 2)) / tileSize) + 2][Math.floor(this.xPosition / tileSize)].color;
-    let current = grid[Math.floor(this.yPosition / tileSize) + 2][Math.floor(this.xPosition / tileSize)].color;
-    console.log(below[0], current[0]);
     // jump
-    if (jump) if (this.coyoteFrames && !this.jumpProgress) this.yPosition -= tileSize * 4;
+    if (jump) if (this.coyoteFrames && this.fallFrames <= 0) this.yPosition -= tileSize * 4;
     this.jumpProgress = 1;
 
+    let gravity = (1 / 54) * this.fallFrames ** 2 - 6;
+    let SW = grid[tileOf(this.yPosition - gravity) + 2][tileOf(this.xPosition)].color;
+    let SE = grid[tileOf(this.yPosition - gravity) + 2][tileOf(this.xPosition - pixel) + 1].color;
+    let NW = grid[tileOf(this.yPosition - gravity) + 1][tileOf(this.xPosition)].color;
+    let NE = grid[tileOf(this.yPosition - gravity) + 1][tileOf(this.xPosition - pixel) + 1].color;
+    console.log(SW, SE, NW, NE);
+
     // gravity
-    if (below == b) {
-      return (this.yPosition += (1 / 54) * (++this.fallFrames) ** 2) / tileSize;
-    }
-    if (below == g) {
-      this.fallFrames = 0;
-      this.yPosition = Math.floor(this.yPosition / tileSize) * tileSize;
-      this.coyoteFrames = 5;
-      this.jumpProgress = 0;
-    }
-    if (below == r) return this.die();
+    if (SW + SE == 0) return (this.yPosition += (1 / 54) * (++this.fallFrames) ** 2) / tileSize;
+    if (SW + SE == 6) return this.die();
     // this.yPosition += (1 / 54) * (++this.fallFrames) ** 2;
+
+    this.fallFrames = 0;
+    this.coyoteFrames = 5;
+    this.yPosition = tileOf(this.yPosition) * tileSize;
   }
 
   die() {
@@ -131,7 +132,7 @@ function draw() {
       /* if (grid[y][x].color == b) noStroke(); // go to doctor
       else stroke(0); // smell toast */
       stroke(0);
-      fill(grid[y][x].color);
+      fill(grid[y][x].colorCode);
       rect(x * tileSize, y * tileSize, tileSize, tileSize);
     }
   }
@@ -156,6 +157,10 @@ function keyPressed() {
   if (key === "s") {
     (paused = !paused) ? noLoop() : loop();
   }
+}
+
+function tileOf(input) {
+  return Math.floor(input / tileSize);
 }
 
 const adeline = new player();
