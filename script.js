@@ -58,8 +58,8 @@ class player {
   move(dir) {
     const left = Math.floor((this.xPosition - pixel) / tileSize);
     const right = Math.ceil((this.xPosition + pixel) / tileSize);
-    const top = Math.floor(this.yPosition / tileSize); // adding 1 to this value gives you the bottom row of the player
-    if (!dir && grid[tileOf(this.yPosition)][tileOf(this.xPosition - pixel)].color != g && grid[top][left].color != g) {
+    const top = tileOf(this.yPosition); // adding 1 to this value gives you the bottom row of the player
+    if (!dir && grid[tileOf(this.yPosition) + 1][tileOf(this.xPosition - pixel)].color != g && grid[top][left].color != g) {
       if (!dir && (grid[top + 1][left].color == r || grid[top][left].color == r)) {
         console.log("you suck");
         this.xPosition = 192;
@@ -82,20 +82,26 @@ class player {
    * @param {Bool} jump wether or not the player is currently pressing a jump button and trying to start a new jump */
   physics(jump) {
     // jump
-    if (jump) if (this.coyoteFrames && this.fallFrames <= 0) this.yPosition -= tileSize * 4;
-    this.jumpProgress = 1;
+    if (jump)
+      if (this.coyoteFrames > 0) {
+        this.coyoteFrames = 0;
+        this.yPosition -= tileSize * 4;
+      }
 
-    let gravity = (1 / 54) * this.fallFrames ** 2 - 6;
-    let SW = grid[tileOf(this.yPosition - gravity) + 2][tileOf(this.xPosition)].color;
-    let SE = grid[tileOf(this.yPosition - gravity) + 2][tileOf(this.xPosition - pixel) + 1].color;
-    let NW = grid[tileOf(this.yPosition - gravity) + 1][tileOf(this.xPosition)].color;
-    let NE = grid[tileOf(this.yPosition - gravity) + 1][tileOf(this.xPosition - pixel) + 1].color;
-    console.log(SW, SE, NW, NE);
+    let gravity = (1 / 54) * this.fallFrames ** 2;
+    let CW = grid[tileOf(this.yPosition + gravity) + 2][tileOf(this.xPosition)].color;
+    let CE = grid[tileOf(this.yPosition + gravity) + 2][tileOf(this.xPosition - pixel) + 1].color;
+    let FW = grid[tileOf(this.yPosition + 2 * gravity) + 2][tileOf(this.xPosition)].color;
+    let FE = grid[tileOf(this.yPosition + 2 * gravity) + 2][tileOf(this.xPosition - pixel) + 1].color;
+    console.log(CW, CE, FW, FE, tileOf(this.yPosition + gravity) + 2, tileOf(this.yPosition - gravity) + 2, this.yPosition, this.yPosition / tileSize - 2);
 
     // gravity
-    if (SW + SE == 0) return (this.yPosition += (1 / 54) * (++this.fallFrames) ** 2) / tileSize;
-    if (SW + SE == 6) return this.die();
-    // this.yPosition += (1 / 54) * (++this.fallFrames) ** 2;
+    if (CW + CE == 0) {
+      if (this.coyoteFrames) this.coyoteFrames--;
+      return (this.yPosition += (1 / 54) * (++this.fallFrames) ** 2) / tileSize;
+    }
+    if (CW + CE == 6) return this.die();
+    this.yPosition += (1 / 54) * (++this.fallFrames) ** 2;
 
     this.fallFrames = 0;
     this.coyoteFrames = 5;
@@ -137,14 +143,14 @@ function draw() {
     }
   }
 
+  // c or space is down
+  adeline.physics(keyIsDown(67) || keyIsDown(32));
+
   // left arrow key is down
   if (keyIsDown(37)) adeline.move(0);
 
   // right arrow key is down
   if (keyIsDown(39)) adeline.move(1);
-
-  // c or space is down
-  adeline.physics(keyIsDown(67) || keyIsDown(32));
 
   // draw adeline
   fill([255, 255, 255]);
