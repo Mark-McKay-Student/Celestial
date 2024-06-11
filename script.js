@@ -24,7 +24,9 @@ const b = [0, 150, 255];
 const g = [100, 100, 100];
 const r = [255, 0, 0];
 const y = [255, 255, 0];
-const map1 = [255, b, 4, g, 36, b, 4, r, 124, b, 4, y, 93, b, 2, g, 21, b, 4, y, 13, b, 2, g, 13, b, 4, g, 21, b, 2, g, 13, b, 4, g, 21, b, 2, g, 11, b, 2, r, 4, g, 21, b, 31, g, 6, b, 3, g, 22, g, 1, r, 14, b, 3, g, 22, g, 1, r, 14, b, 3, g, 22, g, 1, r, 14, b, 3, g, 31, g, 6, b, 3, g, 31, g, 6, b, 3, g];
+const map1 = [255, b, 4, g, 36, b, 4, r, 124, b, 4, y, 93, b, 2, g, 21, b, 4, y, 13, b, 2, g, 13, b, 4, g, 21, b, 2, g, 13, b, 4, g, 21, b, 2, g, 11, b, 2, g, 4, g, 21, b, 31, g, 6, b, 3, g, 22, g, 1, r, 14, b, 3, g, 22, g, 1, r, 14, b, 3, g, 22, g, 1, r, 14, b, 3, g, 31, g, 6, b, 3, g, 31, g, 6, b, 3, g];
+
+let paused = 0;
 
 class tile {
   color = 0;
@@ -61,7 +63,9 @@ class player {
     }
     if (dir && grid[top + 1][right].color != g && grid[top][right].color != g) {
       if (dir && (grid[top + 1][right].color == r || grid[top][right].color == r)) {
-        this.die();
+        console.log("you suck");
+        this.xPosition = 192;
+        this.yPosition = 480;
       }
       return (this.xPosition += pixel);
     }
@@ -69,19 +73,31 @@ class player {
   }
 
   jump() {
-    this.yPosition -= 500;
+    if (this.coyoteFrames && !this.jumpProgress) this.yPosition -= tileSize * 4;
     this.jumpProgress = 1;
   }
 
-  gravity() {
-    let bellow = grid[Math.floor((this.yPosition - (1 / 54) * this.fallFrames ** 2) / tileSize) + 2][Math.floor(this.xPosition / tileSize)].color;
-    if (bellow == b) {
+  /** Apply physics. If a jump is in progress, continue upwards, if not, and the tile below is blue, apply gravity
+   * @param {Bool} jump wether or not the player is currently pressing a jump button and trying to start a new jump */
+  physics(jump) {
+    let below = grid[Math.floor((this.yPosition - ((1 / 54) * this.fallFrames ** 2 - (1 / 54) * (this.fallFrames + 1) ** 2)) / tileSize) + 2][Math.floor(this.xPosition / tileSize)].color;
+    let current = grid[Math.floor(this.yPosition / tileSize) + 2][Math.floor(this.xPosition / tileSize)].color;
+    console.log(below[0], current[0]);
+    // jump
+    if (jump) if (this.coyoteFrames && !this.jumpProgress) this.yPosition -= tileSize * 4;
+    this.jumpProgress = 1;
+
+    // gravity
+    if (below == b) {
       return (this.yPosition += (1 / 54) * (++this.fallFrames) ** 2) / tileSize;
     }
-
-    if (bellow == g) return (this.fallFrames = 0);
-    if (postMoveColor == g && preMoveColor == b) return (this.yPosition = Math.floor(this.yPosition / tileSize));
-    if (postMoveColor == r) return this.die();
+    if (below == g) {
+      this.fallFrames = 0;
+      this.yPosition = Math.floor(this.yPosition / tileSize) * tileSize;
+      this.coyoteFrames = 5;
+      this.jumpProgress = 0;
+    }
+    if (below == r) return this.die();
     // this.yPosition += (1 / 54) * (++this.fallFrames) ** 2;
   }
 
@@ -120,8 +136,6 @@ function draw() {
     }
   }
 
-  adeline.gravity();
-
   // left arrow key is down
   if (keyIsDown(37)) adeline.move(0);
 
@@ -129,14 +143,18 @@ function draw() {
   if (keyIsDown(39)) adeline.move(1);
 
   // c or space is down
-  if (keyIsDown(67) || keyIsDown(32)) if (!adeline.jumpProgress) adeline.jump();
+  adeline.physics(keyIsDown(67) || keyIsDown(32));
 
   // draw adeline
   fill([255, 255, 255]);
   rect(adeline.xPosition, adeline.yPosition, tileSize, tileSize * 2);
+}
 
-  if (keyIsDown(27)) {
-    noLoop();
+function keyPressed() {
+  if (key === "f") redraw();
+
+  if (key === "s") {
+    (paused = !paused) ? noLoop() : loop();
   }
 }
 
