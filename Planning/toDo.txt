@@ -1,5 +1,7 @@
-- Draw Addeline
-- Add physics to Addeline
-- Add collision with map
+Add dash
 
+Add walking momentum
 
+Add collision with map borders
+
+Add wall jump
