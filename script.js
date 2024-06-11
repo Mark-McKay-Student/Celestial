@@ -81,28 +81,34 @@ class player {
   /** Apply physics. If a jump is in progress, continue upwards, if not, and the tile below is blue, apply gravity
    * @param {Bool} jump wether or not the player is currently pressing a jump button and trying to start a new jump */
   physics(jump) {
-    // jump
-    if (jump)
+    let gravity = (1 / 54) * this.fallFrames ** 2 * pixel;
+    this.fallFrames++;
+    let left = grid[tileOf(this.yPosition + gravity) + 2][tileOf(this.xPosition)].color;
+    let right = grid[tileOf(this.yPosition + gravity) + 2][tileOf(this.xPosition - pixel) + 1].color;
+
+    // initiate jump
+    if (jump) {
       if (this.coyoteFrames > 0) {
         this.coyoteFrames = 0;
-        this.yPosition -= tileSize * 4;
+        // this.yPosition -= tileSize * 4;
+        this.fallFrames = -18;
       }
+    }
 
-    let gravity = (1 / 54) * this.fallFrames ** 2;
-    let CW = grid[tileOf(this.yPosition + gravity) + 2][tileOf(this.xPosition)].color;
-    let CE = grid[tileOf(this.yPosition + gravity) + 2][tileOf(this.xPosition - pixel) + 1].color;
-    let FW = grid[tileOf(this.yPosition + 2 * gravity) + 2][tileOf(this.xPosition)].color;
-    let FE = grid[tileOf(this.yPosition + 2 * gravity) + 2][tileOf(this.xPosition - pixel) + 1].color;
-    console.log(CW, CE, FW, FE, tileOf(this.yPosition + gravity) + 2, tileOf(this.yPosition - gravity) + 2, this.yPosition, this.yPosition / tileSize - 2);
+    if (this.fallFrames < 0) {
+      return (this.yPosition -= gravity);
+    }
 
     // gravity
-    if (CW + CE == 0) {
+    if (left + right == 0) {
       if (this.coyoteFrames) this.coyoteFrames--;
-      return (this.yPosition += (1 / 54) * (++this.fallFrames) ** 2) / tileSize;
+      return (this.yPosition += gravity);
     }
-    if (CW + CE == 6) return this.die();
-    this.yPosition += (1 / 54) * (++this.fallFrames) ** 2;
 
+    if (left + right == 6) return this.die();
+
+    // solid
+    this.yPosition += gravity;
     this.fallFrames = 0;
     this.coyoteFrames = 5;
     this.yPosition = tileOf(this.yPosition) * tileSize;
