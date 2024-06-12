@@ -1,7 +1,21 @@
 Add dash
 
-Add walking momentum
-
 Add collision with map borders
 
+Add walking momentum
+
+Debug: Floor clip
+
+Debug: One pixel wall clip
+
+Make sprites
+
+Black border around color groups
+
 Add wall jump
+
+Main Menu
+
+Pause Menu
+
+Make a new level

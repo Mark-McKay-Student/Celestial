@@ -24,10 +24,11 @@ const b = 0;
 const g = 1;
 const y = 2;
 const r = 3;
-const map1 = [255, b, 4, g, 36, b, 4, r, 124, b, 4, y, 13, b, 2, b, 38, b, 2, b, 38, b, 2, g, 21, b, 4, y, 13, b, 2, g, 13, b, 4, g, 21, b, 2, g, 13, b, 4, g, 21, b, 2, g, 11, b, 2, g, 4, g, 21, b, 31, g, 6, b, 3, g, 22, g, 1, r, 14, b, 3, g, 22, g, 1, r, 14, b, 3, g, 22, g, 1, r, 14, b, 3, g, 31, g, 6, b, 3, g, 31, g, 6, b, 3, g];
+const map1 = [255, b, 4, g, 36, b, 4, r, 124, b, 4, y, 13, b, 2, b, 38, b, 2, b, 38, b, 2, g, 21, b, 4, g, 13, b, 2, g, 13, b, 4, g, 21, b, 2, g, 13, b, 4, g, 21, b, 2, g, 11, b, 2, g, 4, g, 21, b, 31, g, 6, b, 25, g, 1, r, 14, b, 3, g, 22, g, 1, r, 14, b, 3, g, 22, g, 1, r, 14, b, 3, g, 31, g, 6, b, 3, g, 31, g, 6, b, 3, g];
 
 let paused = 0;
 let cheat = 0;
+let freezeFrame = 0;
 
 class tile {
   color = 0;
@@ -52,6 +53,7 @@ class player {
 
   coyoteFrames = 7; // 5-0 if it is not 0, it goes down 1 every frame. When the player jumps, we check if this is above 0
   fallFrames = 0; // -18 to -1 means jump in progress, 0 means peak of jump or on solid ground, above 0 means currently falling
+  dashFrames = 0;
 
   /** Returns the distance the player moves. Gets called every frame either left or right is pressed down
    * @param {number} dir Either 0 or 1, with 0 being move left, and 1 being move right
@@ -86,18 +88,25 @@ class player {
     this.fallFrames++;
     let left = grid[tileOf(this.yPosition + gravity) + 2][tileOf(this.xPosition)].color;
     let right = grid[tileOf(this.yPosition + gravity) + 2][tileOf(this.xPosition - pixel) + 1].color;
+    let topLeft = grid[tileOf(this.yPosition - gravity)][tileOf(this.xPosition)].color;
+    let topRight = grid[tileOf(this.yPosition - gravity)][tileOf(this.xPosition - pixel) + 1].color;
     console.log(this.coyoteFrames);
     // initiate jump
     if (jump) {
       if (this.coyoteFrames > 0) {
         this.coyoteFrames = 0;
         // this.yPosition -= tileSize * 4;
-        this.fallFrames = -15;
+        this.fallFrames = -17;
       }
       if (cheat) this.fallFrames = -15;
     }
 
     if (this.fallFrames < 0) {
+      if (topLeft + topRight == 6) return this.die();
+      if (topLeft == 1 || topRight == 1) {
+        this.yPosition = tileOf(this.yPosition) * tileSize;
+        return (this.fallFrames = 0);
+      }
       return (this.yPosition -= gravity);
     }
 
@@ -140,6 +149,8 @@ function setup() {
 }
 
 function draw() {
+  if (freezeFrame) return freezeFrame--;
+
   // draw tiles
   for (let y = 0; y < 23; y++) {
     for (let x = 0; x < 40; x++) {
@@ -160,20 +171,16 @@ function draw() {
   if (keyIsDown(39)) adeline.move(1);
 
   // draw adeline
-  fill([255, 255, 255]);
+  fill([255, 150, 0]);
   rect(adeline.xPosition, adeline.yPosition, tileSize, tileSize * 2);
 }
 
 function keyPressed() {
-  if (key === "f") redraw();
+  if (key.toLowerCase() === "f") redraw();
 
-  if (key === "d") {
-    (paused = !paused) ? noLoop() : loop();
-  }
+  if (key.toLowerCase() === "d" || key.toLowerCase() == "escape") (paused = !paused) ? noLoop() : loop();
 
-  if (key === "a") {
-    cheat = !cheat;
-  }
+  if (key === "a") cheat = !cheat;
 }
 
 function tileOf(input) {
