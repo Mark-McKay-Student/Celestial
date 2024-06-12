@@ -15,35 +15,32 @@ let grid = [[]];
 // 4x 1280:720 32
 // 6x 1920:1080 48
 // 8x 2560:1440 64
-const width = 1280;
-const height = 720;
-const tileSize = 32;
-const pixel = tileSize / 8;
+const resolution = 4;
+const width = 320 * resolution;
+const height = 180 * resolution;
+const tileSize = 8 * resolution;
+const pixel = resolution;
 
 const b = 0;
 const g = 1;
 const y = 2;
 const r = 3;
-const map1 = [255, b, 4, g, 36, b, 4, r, 124, b, 4, y, 13, b, 2, b, 38, b, 2, b, 38, b, 2, g, 21, b, 4, g, 13, b, 2, g, 13, b, 4, g, 21, b, 2, g, 13, b, 4, g, 21, b, 2, g, 11, b, 2, g, 4, g, 21, b, 31, g, 6, b, 25, g, 1, r, 14, b, 3, g, 22, g, 1, r, 14, b, 3, g, 22, g, 1, r, 14, b, 3, g, 31, g, 6, b, 3, g, 31, g, 6, b, 3, g];
+
+// I could have made this readable, but this was more fun
+// nnnnnnnnncc number color (try to figure out what this means)
+const map1 = [1020, 17, 144, 19, 496, 18, 372, 9, 84, 17, 52, 9, 52, 17, 84, 9, 52, 17, 84, 9, 44, 9, 17, 84, 125, 24, 101, 7, 56, 101, 7, 56, 101, 7, 56, 13, 125, 24, 137, 24, 13];
+// [255, b, 4, g, 36, b, 4, r, 124, b, 4, y, 13, b, 2, b, 38, b, 2, b, 38, b, 2, g, 21, b, 4, g, 13, b, 2, g, 13, b, 4, g, 21, b, 2, g, 13, b, 4, g, 21, b, 2, g, 11, b, 2, g, 4, g, 21, b, 31, g, 6, b, 25, g, 1, r, 14, b, 3, g, 22, g, 1, r, 14, b, 3, g, 22, g, 1, r, 14, b, 3, g, 31, g, 6, b, 3, g, 31, g, 6, b, 3, g];
 
 let paused = 0;
 let cheat = 0;
 let freezeFrame = 0;
 
 class tile {
+  //hcc   1 bit for half, 2 bits for color
   color = 0;
-  half = false;
 
-  constructor(color, half) {
+  constructor(color) {
     this.color = color;
-    this.half = half;
-  }
-
-  get colorCode() {
-    if (this.color < 1) return [0, 150, 255];
-    if (this.color < 2) return [100, 100, 100];
-    if (this.color < 3) return [255, 255, 0];
-    if (this.color < 4) return [255, 0, 0];
   }
 }
 
@@ -62,19 +59,20 @@ class player {
     const left = Math.floor((this.xPosition - pixel) / tileSize);
     const right = Math.ceil((this.xPosition + pixel) / tileSize);
     const top = tileOf(this.yPosition); // adding 1 to this value gives you the bottom row of the player
-    if (!dir && grid[tileOf(this.yPosition) + 1][tileOf(this.xPosition - pixel)].color != g && grid[top][left].color != g) {
+    if (!dir && left < 0) return;
+    if (!dir && grid[tileOf(this.yPosition) + 1][left].color != g && grid[tileOf(this.yPosition)][left].color != g) {
       if (!dir && (grid[top + 1][left].color == r || grid[top][left].color == r)) {
         console.log("you suck");
-        this.xPosition = 192;
-        this.yPosition = 480;
+        this.xPosition = tileSize * 6;
+        this.yPosition = tileSize * 15;
       }
       return (this.xPosition -= pixel);
     }
     if (dir && grid[top + 1][right].color != g && grid[top][right].color != g) {
       if (dir && (grid[top + 1][right].color == r || grid[top][right].color == r)) {
         console.log("you suck");
-        this.xPosition = 192;
-        this.yPosition = 480;
+        this.xPosition = tileSize * 6;
+        this.yPosition = yPosition = tileSize * 15;
       }
       return (this.xPosition += pixel);
     }
@@ -84,29 +82,34 @@ class player {
   /** Apply physics. If a jump is in progress, continue upwards, if not, and the tile below is blue, apply gravity
    * @param {Bool} jump wether or not the player is currently pressing a jump button and trying to start a new jump */
   physics(jump) {
-    let gravity = (1 / 54) * this.fallFrames ** 2 * pixel;
-    this.fallFrames++;
+    let gravity = (1 / 54) * (this.fallFrames++) ** 2 * pixel; // calculate gravity, and add one to fall frames afterwards
+
+    if (tileOf(this.yPosition - gravity) < 0) {
+      this.yPosition = tileOf(this.yPosition) * tileSize;
+      return (this.fallFrames = 0);
+    }
     let left = grid[tileOf(this.yPosition + gravity) + 2][tileOf(this.xPosition)].color;
     let right = grid[tileOf(this.yPosition + gravity) + 2][tileOf(this.xPosition - pixel) + 1].color;
     let topLeft = grid[tileOf(this.yPosition - gravity)][tileOf(this.xPosition)].color;
     let topRight = grid[tileOf(this.yPosition - gravity)][tileOf(this.xPosition - pixel) + 1].color;
-    console.log(this.coyoteFrames);
-    // initiate jump
+
+    // start jump
     if (jump) {
       if (this.coyoteFrames > 0) {
         this.coyoteFrames = 0;
-        // this.yPosition -= tileSize * 4;
         this.fallFrames = -17;
       }
       if (cheat) this.fallFrames = -15;
     }
 
+    // apply jump (and check collision)
     if (this.fallFrames < 0) {
-      if (topLeft + topRight == 6) return this.die();
       if (topLeft == 1 || topRight == 1) {
         this.yPosition = tileOf(this.yPosition) * tileSize;
         return (this.fallFrames = 0);
       }
+      if (topLeft == 3 || topRight == 3) return this.die();
+
       return (this.yPosition -= gravity);
     }
 
@@ -137,13 +140,13 @@ function setup() {
 
   let y = 0;
   let x = 0;
-  for (let mapIndex = 0; mapIndex < map1.length; mapIndex += 2) {
-    for (let counter = 0; counter < map1[mapIndex]; counter++) {
+  for (let mapIndex in map1) {
+    for (let counter = 0; counter < map1[mapIndex] >> 2; counter++) {
       if (x > 39) {
         x = 0;
         grid[++y] = [];
       }
-      grid[y][x++] = new tile(map1[mapIndex + 1]);
+      grid[y][x++] = new tile(map1[mapIndex] & 3);
     }
   }
 }
@@ -152,11 +155,14 @@ function draw() {
   if (freezeFrame) return freezeFrame--;
 
   // draw tiles
+  // noStroke();
+  stroke(0);
   for (let y = 0; y < 23; y++) {
     for (let x = 0; x < 40; x++) {
-      if (grid[y][x].color == b) noStroke(); // go to doctor
-      else stroke(0); // smell toast
-      fill(grid[y][x].colorCode);
+      if (grid[y][x].color < 1) fill([0, 150, 255]); // blue
+      else if (grid[y][x].color < 2) fill([100, 100, 100]); // grey
+      else if (grid[y][x].color < 3) fill([255, 255, 0]); // yellow
+      else if (grid[y][x].color < 4) fill([255, 0, 0]); // red
       rect(x * tileSize, y * tileSize, tileSize, tileSize);
     }
   }
@@ -171,7 +177,7 @@ function draw() {
   if (keyIsDown(39)) adeline.move(1);
 
   // draw adeline
-  fill([255, 150, 0]);
+  fill([255, 0, 150]);
   rect(adeline.xPosition, adeline.yPosition, tileSize, tileSize * 2);
 }
 
@@ -180,7 +186,9 @@ function keyPressed() {
 
   if (key.toLowerCase() === "d" || key.toLowerCase() == "escape") (paused = !paused) ? noLoop() : loop();
 
-  if (key === "a") cheat = !cheat;
+  if (key.toLowerCase() === "a") cheat = !cheat;
+
+  if (key.toLowerCase() === "x") freezeFrame = 4;
 }
 
 function tileOf(input) {
