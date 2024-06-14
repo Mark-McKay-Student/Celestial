@@ -90,6 +90,7 @@ class player {
     const left = Math.floor((this.xPosition - pixel) / tileSize);
     const right = Math.ceil((this.xPosition + pixel) / tileSize);
     const top = tileOf(this.yPosition); // adding 1 to this value gives you the bottom row of the player
+    if (this.leftKey & this.rightKey) return 0;
     if (this.leftKey && left < 0) return;
     if (this.leftKey && grid[tileOf(this.yPosition) + 1][left].color != 1 && grid[tileOf(this.yPosition)][left].color != 1) {
       if (this.leftKey && (grid[top + 1][left].color == 3 || grid[top][left].color == 3)) {
@@ -111,8 +112,7 @@ class player {
     return 0;
   }
 
-  /** Apply physics. If a jump is in progress, continue upwards, if not, and the tile below is blue, apply gravity
-   * @param {Bool} jump wether or not the player is currently pressing a jump button and trying to start a new jump */
+  /** Apply physics. If a jump is in progress, continue upwards, if not, and the tile below is blue, apply gravity */
   physics() {
     let gravity = (1 / 54) * (this.fallFrames++) ** 2 * pixel; // calculate gravity, and add one to fall frames afterwards
 
@@ -188,8 +188,8 @@ function draw() {
   if (freezeFrame) return freezeFrame--;
 
   // draw tiles
-  // noStroke();
-  stroke(0);
+  noStroke();
+  // stroke(0);
   for (let y = 0; y < 23; y++) {
     for (let x = 0; x < 40; x++) {
       if (grid[y][x].color < 1) fill([0, 150, 255]); // blue
