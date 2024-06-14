@@ -8,18 +8,18 @@
 
 "use strict";
 
-let canvas;
+let canvas = document.getElementById("canvas");
 let grid = [[]];
 
+// pixel size is the same as resolution
 // 1x 320:180 8
 // 4x 1280:720 32
 // 6x 1920:1080 48
 // 8x 2560:1440 64
-const resolution = 4;
-const width = 320 * resolution;
-const height = 180 * resolution;
-const tileSize = 8 * resolution;
-const pixel = resolution;
+const pixel = 4;
+const width = 320 * pixel;
+const height = 180 * pixel;
+const tileSize = 8 * pixel;
 
 const b = 0;
 const g = 1;
@@ -51,25 +51,56 @@ class player {
   coyoteFrames = 7; // 5-0 if it is not 0, it goes down 1 every frame. When the player jumps, we check if this is above 0
   fallFrames = 0; // -18 to -1 means jump in progress, 0 means peak of jump or on solid ground, above 0 means currently falling
   dashFrames = 0;
+  canDash = 0;
+  dashDir = 0;
+
+  leftKey = 0;
+  rightKey = 0;
+  upKey = 0;
+  downKey = 0;
+  jumpKey = 0;
+  dashKey = 0;
+
+  dash() {
+    if (this.canDash) {
+      freezeFrame = 3;
+      this.dashFrames = 10;
+      this.fallFrames = 0;
+      return (this.canDash = 0);
+    }
+    if (this.dashFrames-- == 10) {
+      this.dashDir = 0; // 0000
+      if (this.leftKey && !this.rightKey) this.dashDir += 8; // 1000
+      if (!this.leftKey && this.rightKey) this.dashDir += 4; // 0100
+      if (this.upKey && !this.downKey) this.dashDir += 2; // ??10
+      if (!this.upKey && this.downKey) this.dashDir += 1; // ??01
+      if (!this.dashDir) this.dashDir += 2; // 0010
+    }
+
+    if (this.dashDir & 8) this.xPosition -= 4 * pixel;
+    if (this.dashDir & 4) this.xPosition += 4 * pixel;
+    if (this.dashDir & 2) this.yPosition -= 4 * pixel;
+    if (this.dashDir & 1) this.yPosition += 4 * pixel;
+  }
 
   /** Returns the distance the player moves. Gets called every frame either left or right is pressed down
-   * @param {number} dir Either 0 or 1, with 0 being move left, and 1 being move right
    * @returns {number} How much the player moves, minus 1 pixel for moving one pixel left, 0 if movement didn't go through, and plus 1 pixel for moving 1 pixel right  */
-  move(dir) {
+  move() {
     const left = Math.floor((this.xPosition - pixel) / tileSize);
     const right = Math.ceil((this.xPosition + pixel) / tileSize);
     const top = tileOf(this.yPosition); // adding 1 to this value gives you the bottom row of the player
-    if (!dir && left < 0) return;
-    if (!dir && grid[tileOf(this.yPosition) + 1][left].color != g && grid[tileOf(this.yPosition)][left].color != g) {
-      if (!dir && (grid[top + 1][left].color == r || grid[top][left].color == r)) {
+    if (this.leftKey && left < 0) return;
+    if (this.leftKey && grid[tileOf(this.yPosition) + 1][left].color != 1 && grid[tileOf(this.yPosition)][left].color != 1) {
+      if (this.leftKey && (grid[top + 1][left].color == 3 || grid[top][left].color == 3)) {
         console.log("you suck");
         this.xPosition = tileSize * 6;
         this.yPosition = tileSize * 15;
       }
       return (this.xPosition -= pixel);
     }
-    if (dir && grid[top + 1][right].color != g && grid[top][right].color != g) {
-      if (dir && (grid[top + 1][right].color == r || grid[top][right].color == r)) {
+    if (this.rightKey && right > 39) return;
+    if (this.rightKey && grid[top + 1][right].color != 1 && grid[top][right].color != 1) {
+      if (this.rightKey && (grid[top + 1][right].color == 3 || grid[top][right].color == 3)) {
         console.log("you suck");
         this.xPosition = tileSize * 6;
         this.yPosition = yPosition = tileSize * 15;
@@ -81,7 +112,7 @@ class player {
 
   /** Apply physics. If a jump is in progress, continue upwards, if not, and the tile below is blue, apply gravity
    * @param {Bool} jump wether or not the player is currently pressing a jump button and trying to start a new jump */
-  physics(jump) {
+  physics() {
     let gravity = (1 / 54) * (this.fallFrames++) ** 2 * pixel; // calculate gravity, and add one to fall frames afterwards
 
     if (tileOf(this.yPosition - gravity) < 0) {
@@ -94,7 +125,7 @@ class player {
     let topRight = grid[tileOf(this.yPosition - gravity)][tileOf(this.xPosition - pixel) + 1].color;
 
     // start jump
-    if (jump) {
+    if (this.jumpKey) {
       if (this.coyoteFrames > 0) {
         this.coyoteFrames = 0;
         this.fallFrames = -17;
@@ -122,6 +153,7 @@ class player {
     if (left + right == 6) return this.die();
 
     // solid
+    this.canDash = 1;
     this.yPosition += gravity;
     this.fallFrames = 0;
     this.coyoteFrames = 7;
@@ -136,7 +168,7 @@ class player {
 }
 
 function setup() {
-  canvas = createCanvas(width, height);
+  createCanvas(width, height, canvas);
 
   let y = 0;
   let x = 0;
@@ -167,14 +199,18 @@ function draw() {
     }
   }
 
-  // c or space is down
-  adeline.physics(keyIsDown(67) || keyIsDown(32));
+  adeline.leftKey = keyIsDown(37);
+  adeline.rightKey = keyIsDown(39);
+  adeline.upKey = keyIsDown(38);
+  adeline.downKey = keyIsDown(40);
+  adeline.jumpKey = (keyIsDown(67) || keyIsDown(32)) && adeline.fallFrames >= 0;
+  adeline.dashKey = keyIsDown(88);
 
-  // left arrow key is down
-  if (keyIsDown(37)) adeline.move(0);
-
-  // right arrow key is down
-  if (keyIsDown(39)) adeline.move(1);
+  if ((adeline.dashKey && adeline.canDash) || adeline.dashFrames) adeline.dash();
+  else {
+    if (adeline.leftKey || adeline.rightKey) adeline.move();
+    adeline.physics();
+  }
 
   // draw adeline
   fill([255, 0, 150]);
@@ -187,8 +223,6 @@ function keyPressed() {
   if (key.toLowerCase() === "d" || key.toLowerCase() == "escape") (paused = !paused) ? noLoop() : loop();
 
   if (key.toLowerCase() === "a") cheat = !cheat;
-
-  if (key.toLowerCase() === "x") freezeFrame = 4;
 }
 
 function tileOf(input) {

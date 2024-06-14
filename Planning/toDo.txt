@@ -1,8 +1,10 @@
-Add dash
+Add dash collision
 
-Add collision with map borders
+Optimize map more
 
 Add walking momentum
+
+Debug: Celling clip
 
 Debug: Floor clip
 
