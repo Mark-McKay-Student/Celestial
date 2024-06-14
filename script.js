@@ -66,6 +66,7 @@ class player {
       freezeFrame = 3;
       this.dashFrames = 10;
       this.fallFrames = 0;
+      this.coyoteFrames = 0;
       return (this.canDash = 0);
     }
     if (this.dashFrames-- == 10) {
@@ -213,7 +214,7 @@ function draw() {
   }
 
   // draw adeline
-  fill([255, 0, 150]);
+  adeline.canDash ? fill([255, 0, 150]) : fill([255, 255, 255]);
   rect(adeline.xPosition, adeline.yPosition, tileSize, tileSize * 2);
 }
 
