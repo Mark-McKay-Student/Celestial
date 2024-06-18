@@ -1,7 +1,5 @@
 /* *
- * ICS4U - Final Project
- *
- * Description:
+ * Celestial
  *
  * Author: Mark McKay
  */
@@ -9,41 +7,28 @@
 "use strict";
 
 let canvas = document.getElementById("canvas");
-let grid = [[]];
+let grid = [[]]; // 2d array of colors of the maps
 
-// pixel size is the same as resolution
 // 1x 320:180 8
 // 4x 1280:720 32
 // 6x 1920:1080 48
 // 8x 2560:1440 64
-const pixel = 4;
-const width = 320 * pixel;
-const height = 180 * pixel;
-const tileSize = 8 * pixel;
-
-const b = 0;
-const g = 1;
-const y = 2;
-const r = 3;
+const pixel = 4; // how many pixels are in one "pixel"
+const width = 320 * pixel; // screen width
+const height = 180 * pixel; // screen height
+const tileSize = 8 * pixel; // height and width of one tile
 
 // I could have made this readable, but this was more fun
 // nnnnnnnnncc number color (try to figure out what this means)
 const map1 = [1020, 17, 144, 19, 496, 18, 372, 9, 84, 17, 52, 9, 52, 17, 84, 9, 52, 17, 84, 9, 44, 9, 17, 84, 125, 24, 101, 7, 56, 101, 7, 56, 101, 7, 56, 13, 125, 24, 137, 24, 13];
-// [255, b, 4, g, 36, b, 4, r, 124, b, 4, y, 13, b, 2, b, 38, b, 2, b, 38, b, 2, g, 21, b, 4, g, 13, b, 2, g, 13, b, 4, g, 21, b, 2, g, 13, b, 4, g, 21, b, 2, g, 11, b, 2, g, 4, g, 21, b, 31, g, 6, b, 25, g, 1, r, 14, b, 3, g, 22, g, 1, r, 14, b, 3, g, 22, g, 1, r, 14, b, 3, g, 31, g, 6, b, 3, g, 31, g, 6, b, 3, g];
 
 let paused = 0;
 let cheat = 0;
 let freezeFrame = 0;
 
-class tile {
-  //hcc   1 bit for half, 2 bits for color
-  color = 0;
-
-  constructor(color) {
-    this.color = color;
-  }
-}
-
+/** Player class. Could theoreticly have two of these and have two players simultaneously playing, however we only use this once
+ * @property
+ */
 class player {
   xPosition = tileSize * 6; // spawn location
   yPosition = tileSize * 15; //
@@ -60,6 +45,10 @@ class player {
   downKey = 0;
   jumpKey = 0;
   dashKey = 0;
+
+  checkX() {}
+
+  checkY() {}
 
   dash() {
     if (this.canDash) {
@@ -78,10 +67,23 @@ class player {
       if (!this.dashDir) this.dashDir += 2; // 0010
     }
 
-    if (this.dashDir & 8) this.xPosition -= 4 * pixel;
+    if (this.dashDir & 8) this.xPosition += -4 * pixel;
     if (this.dashDir & 4) this.xPosition += 4 * pixel;
-    if (this.dashDir & 2) this.yPosition -= 4 * pixel;
+    if (this.dashDir & 2) this.yPosition += -4 * pixel;
     if (this.dashDir & 1) this.yPosition += 4 * pixel;
+
+    /* let xMovement = 0;
+    let yMovement = 0;
+
+    if (this.dashDir & 8) xMovement = -4 * pixel;
+    if (this.dashDir & 4) xMovement = 4 * pixel;
+    if (this.dashDir & 2) yMovement = -4 * pixel;
+    if (this.dashDir & 1) yMovement = 4 * pixel;
+
+    if (grid[tileOf(this.yPosition + yMovement) + 2][tileOf(this.xPosition + xMovement)] != 1 || grid[tileOf(this.yPosition + yMovement) + 1][tileOf(this.xPosition + xMovement)] != 1) {
+      this.xPosition += xMovement;
+      this.yPosition += yMovement;
+    } */
   }
 
   /** Returns the distance the player moves. Gets called every frame either left or right is pressed down
@@ -92,8 +94,8 @@ class player {
     const top = tileOf(this.yPosition); // adding 1 to this value gives you the bottom row of the player
     if (this.leftKey & this.rightKey) return 0;
     if (this.leftKey && left < 0) return;
-    if (this.leftKey && grid[tileOf(this.yPosition) + 1][left].color != 1 && grid[tileOf(this.yPosition)][left].color != 1) {
-      if (this.leftKey && (grid[top + 1][left].color == 3 || grid[top][left].color == 3)) {
+    if (this.leftKey && grid[tileOf(this.yPosition + tileSize / 2) + 1][left] != 1 && grid[tileOf(this.yPosition + tileSize / 2)][left] != 1) {
+      if (this.leftKey && (grid[top + 1][left] == 3 || grid[top][left] == 3)) {
         console.log("you suck");
         this.xPosition = tileSize * 6;
         this.yPosition = tileSize * 15;
@@ -101,8 +103,8 @@ class player {
       return (this.xPosition -= pixel);
     }
     if (this.rightKey && right > 39) return;
-    if (this.rightKey && grid[top + 1][right].color != 1 && grid[top][right].color != 1) {
-      if (this.rightKey && (grid[top + 1][right].color == 3 || grid[top][right].color == 3)) {
+    if (this.rightKey && grid[top + 1][right] != 1 && grid[top][right] != 1) {
+      if (this.rightKey && (grid[top + 1][right] == 3 || grid[top][right] == 3)) {
         console.log("you suck");
         this.xPosition = tileSize * 6;
         this.yPosition = yPosition = tileSize * 15;
@@ -120,10 +122,13 @@ class player {
       this.yPosition = tileOf(this.yPosition) * tileSize;
       return (this.fallFrames = 0);
     }
-    let left = grid[tileOf(this.yPosition + gravity) + 2][tileOf(this.xPosition)].color;
-    let right = grid[tileOf(this.yPosition + gravity) + 2][tileOf(this.xPosition - pixel) + 1].color;
-    let topLeft = grid[tileOf(this.yPosition - gravity)][tileOf(this.xPosition)].color;
-    let topRight = grid[tileOf(this.yPosition - gravity)][tileOf(this.xPosition - pixel) + 1].color;
+
+    let left = grid[tileOf(this.yPosition + gravity) + 2][tileOf(this.xPosition)];
+    let right = grid[tileOf(this.yPosition + gravity) + 2][tileOf(this.xPosition - pixel) + 1];
+    let midLeft = grid[tileOf(this.yPosition + gravity) + 1][tileOf(this.xPosition)];
+    let midRight = grid[tileOf(this.yPosition + gravity) + 1][tileOf(this.xPosition - pixel) + 1];
+    let topLeft = grid[tileOf(this.yPosition - gravity)][tileOf(this.xPosition)];
+    let topRight = grid[tileOf(this.yPosition - gravity)][tileOf(this.xPosition - pixel) + 1];
 
     // start jump
     if (this.jumpKey) {
@@ -158,6 +163,7 @@ class player {
     this.yPosition += gravity;
     this.fallFrames = 0;
     this.coyoteFrames = 7;
+    if (midLeft == 1 || midRight == 1) console.log((this.yPosition -= tileSize));
     this.yPosition = tileOf(this.yPosition) * tileSize;
   }
 
@@ -179,7 +185,7 @@ function setup() {
         x = 0;
         grid[++y] = [];
       }
-      grid[y][x++] = new tile(map1[mapIndex] & 3);
+      grid[y][x++] = map1[mapIndex] & 3;
     }
   }
 }
@@ -189,13 +195,12 @@ function draw() {
 
   // draw tiles
   noStroke();
-  // stroke(0);
   for (let y = 0; y < 23; y++) {
     for (let x = 0; x < 40; x++) {
-      if (grid[y][x].color < 1) fill([0, 150, 255]); // blue
-      else if (grid[y][x].color < 2) fill([100, 100, 100]); // grey
-      else if (grid[y][x].color < 3) fill([255, 255, 0]); // yellow
-      else if (grid[y][x].color < 4) fill([255, 0, 0]); // red
+      if (grid[y][x] < 1) fill([0, 150, 255]); // blue
+      else if (grid[y][x] < 2) fill([100, 100, 100]); // grey
+      else if (grid[y][x] < 3) fill([255, 255, 0]); // yellow
+      else if (grid[y][x] < 4) fill([255, 0, 0]); // red
       rect(x * tileSize, y * tileSize, tileSize, tileSize);
     }
   }
